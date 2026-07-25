@@ -1,0 +1,37 @@
+name: Renovate
+
+on:
+  schedule:
+    # Mondays 08:00 UTC. The preset's own `schedule` still gates when PRs may open,
+    # so a repo is only acted on inside its allowed window even if the runner fires.
+    - cron: "0 8 * * 1"
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: "Renovate log level"
+        default: "info"
+        type: choice
+        options: ["debug", "info", "warn"]
+
+concurrency:
+  group: renovate
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  renovate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Run Renovate over the fleet
+        uses: renovatebot/github-action@v43.0.0
+        with:
+          configurationFile: config.js
+          # A fleet-scoped token (see README). NOT the default GITHUB_TOKEN, which
+          # cannot see other repos in the org.
+          token: ${{ secrets.RENOVATE_TOKEN }}
+        env:
+          LOG_LEVEL: ${{ inputs.logLevel || 'info' }}

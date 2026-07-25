@@ -1,0 +1,27 @@
+name: Validate Renovate config
+
+# A broken preset misfires on every repo that extends it, so it must fail here first.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Validate preset and runner config (warnings are fatal)
+        run: |
+          npx --yes --package renovate -- renovate-config-validator --strict default.json config.js
