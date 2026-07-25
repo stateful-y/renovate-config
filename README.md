@@ -17,10 +17,13 @@ The stateful-y fleet's shared Renovate configuration and self-hosted runner.
 
 ## One-time setup
 
-1. Create a **fleet-scoped token** and add it as the `RENOVATE_TOKEN` repo secret. Either
-   a fine-grained PAT with `contents:write` + `pull-requests:write` on the fleet repos,
-   or (preferred) a GitHub App installation token. The default `GITHUB_TOKEN` cannot see
-   other repos in the org, so it will not work.
+1. Create a **GitHub App** and store two repo secrets: `RENOVATE_APP_ID` and
+   `RENOVATE_APP_PRIVATE_KEY`. The runner (`renovate.yml`) mints a short-lived
+   installation token from these each run. The App needs **Contents, Pull requests,
+   Issues and Workflows (all read/write)** plus Metadata (read); `Workflows: write` is
+   required or any PR that edits `.github/workflows/*` fails to push. Install the App on
+   the `stateful-y` org (all repositories, or the fleet). The default `GITHUB_TOKEN`
+   cannot see other repos in the org, so it will not work.
 2. Each fleet repo opts in by shipping `renovate.json` with
    `{ "extends": ["github>stateful-y/renovate-config"] }` — the template already
    generates this when `renovate_preset` is set to `stateful-y/renovate-config`.

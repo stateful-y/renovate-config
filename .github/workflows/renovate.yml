@@ -26,12 +26,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      # Mint a short-lived installation token from the GitHub App. Scoped to every
+      # repo the App is installed on in the org, so Renovate can autodiscover and
+      # open PRs across the fleet. NOT the default GITHUB_TOKEN, which sees only this
+      # repo. The App's permissions must include Workflows:write, or any PR that
+      # edits .github/workflows/* fails to push.
+      - name: Mint an App installation token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.RENOVATE_APP_ID }}
+          private-key: ${{ secrets.RENOVATE_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
       - name: Run Renovate over the fleet
         uses: renovatebot/github-action@v43.0.0
         with:
           configurationFile: config.js
-          # A fleet-scoped token (see README). NOT the default GITHUB_TOKEN, which
-          # cannot see other repos in the org.
-          token: ${{ secrets.RENOVATE_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
         env:
           LOG_LEVEL: ${{ inputs.logLevel || 'info' }}
