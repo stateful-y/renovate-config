@@ -34,6 +34,16 @@
       "matchStrings": [
         "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+[^\\n]*?(?<currentValue>\\d[^\"\\s]*)"
       ]
+    },
+    {
+      "customType": "regex",
+      "description": "Bump the seeded uv version default in the python-package-copier template's copier.yml, so freshly generated projects are born current. A no-op on repos without copier.yml.",
+      "managerFilePatterns": ["/^copier\\.yml$/"],
+      "matchStrings": [
+        "uv_version:[\\s\\S]*?default: \"(?<currentValue>\\d[^\"]+)\""
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "astral-sh/uv"
     }
   ]
 }
