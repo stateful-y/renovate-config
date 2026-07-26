@@ -1,36 +1,61 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended"],
+  "extends": [
+    "config:recommended",
+    "helpers:pinGitHubActionDigests"
+  ],
   "timezone": "Etc/UTC",
-  "schedule": ["before 9am on monday"],
-  "labels": ["dependencies"],
+  "schedule": [
+    "before 9am on monday"
+  ],
+  "labels": [
+    "dependencies"
+  ],
   "dependencyDashboard": true,
   "prConcurrentLimit": 5,
   "prHourlyLimit": 2,
   "packageRules": [
     {
       "description": "Batch runtime, test and docs dependencies into one low-noise PR.",
-      "matchManagers": ["pep621"],
+      "matchManagers": [
+        "pep621"
+      ],
       "groupName": "python-dependencies",
-      "addLabels": ["python"]
+      "addLabels": [
+        "python"
+      ]
     },
     {
       "description": "Lockstep the version-sensitive lint tools so local == CI stays true after an upgrade. prek pins the builtin hooks' implementations, so it moves with the linters.",
-      "matchPackageNames": ["ruff", "rumdl", "ty", "interrogate", "prek"],
+      "matchPackageNames": [
+        "ruff",
+        "rumdl",
+        "ty",
+        "interrogate",
+        "prek"
+      ],
       "groupName": "lint-tools",
-      "addLabels": ["python"]
+      "addLabels": [
+        "python"
+      ]
     },
     {
       "description": "Label GitHub Actions updates.",
-      "matchManagers": ["github-actions"],
-      "addLabels": ["ci"]
+      "matchManagers": [
+        "github-actions"
+      ],
+      "addLabels": [
+        "ci"
+      ]
     }
   ],
   "customManagers": [
     {
       "customType": "regex",
       "description": "Bump versions annotated with a `# renovate:` comment in workflow files (the pinned uv, nox and git-cliff versions that no built-in manager reads).",
-      "managerFilePatterns": ["/^\\.github/workflows/.+\\.ya?ml$/"],
+      "managerFilePatterns": [
+        "/^\\.github/workflows/.+\\.ya?ml$/"
+      ],
       "matchStrings": [
         "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+[^\\n]*?(?<currentValue>\\d[^\"\\s]*)"
       ]
@@ -38,7 +63,9 @@
     {
       "customType": "regex",
       "description": "Bump the seeded uv version default in the python-package-copier template's copier.yml, so freshly generated projects are born current. A no-op on repos without copier.yml.",
-      "managerFilePatterns": ["/^copier\\.yml$/"],
+      "managerFilePatterns": [
+        "/^copier\\.yml$/"
+      ],
       "matchStrings": [
         "uv_version:[\\s\\S]*?default: \"(?<currentValue>\\d[^\"]+)\""
       ],
