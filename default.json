@@ -6,7 +6,7 @@
   ],
   "timezone": "Etc/UTC",
   "schedule": [
-    "before 9am on monday"
+    "on monday"
   ],
   "labels": [
     "dependencies"
@@ -52,25 +52,14 @@
   "customManagers": [
     {
       "customType": "regex",
-      "description": "Bump versions annotated with a `# renovate:` comment in workflow files (the pinned uv, nox and git-cliff versions that no built-in manager reads).",
+      "description": "Bump versions annotated with a `# renovate:` comment (the pinned uv, nox, git-cliff, gitleaks, cyclonedx-bom and twine versions that no built-in manager reads). Covers rendered workflows AND the python-package-copier template sources that generate them: Renovate cannot see `.jinja` files, so the template's own seeds aged while every repo it generated moved ahead, and each fan-out then re-seeded a stale value into repos that had already passed it.",
       "managerFilePatterns": [
-        "/^\\.github/workflows/.+\\.ya?ml$/"
+        "/^\\.github/workflows/.+\\.ya?ml$/",
+        "/^template/.+\\.jinja$/"
       ],
       "matchStrings": [
         "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+[^\\n]*?(?<currentValue>\\d[^\"\\s]*)"
       ]
-    },
-    {
-      "customType": "regex",
-      "description": "Bump the seeded uv version default in the python-package-copier template's copier.yml, so freshly generated projects are born current. A no-op on repos without copier.yml.",
-      "managerFilePatterns": [
-        "/^copier\\.yml$/"
-      ],
-      "matchStrings": [
-        "uv_version:[\\s\\S]*?default: \"(?<currentValue>\\d[^\"]+)\""
-      ],
-      "datasourceTemplate": "github-releases",
-      "depNameTemplate": "astral-sh/uv"
     }
   ]
 }
