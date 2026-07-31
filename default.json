@@ -47,6 +47,19 @@
       "addLabels": [
         "ci"
       ]
+    },
+    {
+      "description": "Pin the template's action refs to commit SHAs, matching what helpers:pinGitHubActionDigests already does to the rendered workflows downstream. A tag is a label its owner can move; a SHA is not.",
+      "matchManagers": [
+        "custom.regex"
+      ],
+      "matchFileNames": [
+        "template/**"
+      ],
+      "pinDigests": true,
+      "addLabels": [
+        "ci"
+      ]
     }
   ],
   "customManagers": [
@@ -60,6 +73,19 @@
       "matchStrings": [
         "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+[^\\n]*?(?<currentValue>\\d[^\"\\s]*)"
       ]
+    },
+    {
+      "customType": "regex",
+      "description": "Keep the python-package-copier template's own `uses:` refs current, and pinned to digests. Renovate's github-actions manager reads `.github/workflows/*.yml`, so it maintains the workflows generated projects RUN but never the `.jinja` sources they are generated FROM: the template's refs moved only when a human edited a hand-written map, and every fan-out re-seeded whatever that human last wrote. Pinning here rather than only downstream keeps one notation on both sides -- with the template on tags and the fleet on digests, both moving, every action major bump would collide in seven repos at once.",
+      "managerFilePatterns": [
+        "/^template/.+\\.jinja$/"
+      ],
+      "matchStrings": [
+        "uses: (?<depName>[\\w.-]+/[\\w.-]+(?:/[\\w.-]+)?)@(?<currentDigest>[a-f0-9]{40}) # (?<currentValue>v\\d[^\\s]*)",
+        "uses: (?<depName>[\\w.-]+/[\\w.-]+(?:/[\\w.-]+)?)@(?<currentValue>v\\d[^\\s#]*)"
+      ],
+      "matchStringsStrategy": "any",
+      "datasourceTemplate": "github-tags"
     }
   ]
 }
