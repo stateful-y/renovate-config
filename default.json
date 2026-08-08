@@ -49,14 +49,14 @@
       ]
     },
     {
-      "description": "Pin the template's action refs to commit SHAs, matching what helpers:pinGitHubActionDigests already does to the rendered workflows downstream. A tag is a label its owner can move; a SHA is not.",
+      "description": "Keep the template's action refs current, but on tags rather than digests. `pinDigests` here asked Renovate to write a SHA into a regex match that captures no `currentDigest` group -- there is nowhere to put it, so the write failed. That failure took the whole shared `renovate/pin-dependencies` branch with it, which is why python-package-copier alone stayed unpinned while the same run pinned all seven repos it generates: it is the only repo with a `template/` tree, so it is the only repo this rule touches. Digests belong downstream, where `helpers:pinGitHubActionDigests` writes them into the rendered workflows. Pinning here too would put a SHA on all 49 `uses:` lines of the template AND of every repo generated from it, turning each one into a conflict on every `copier update`.",
       "matchManagers": [
         "custom.regex"
       ],
       "matchFileNames": [
         "template/**"
       ],
-      "pinDigests": true,
+      "pinDigests": false,
       "addLabels": [
         "ci"
       ]
