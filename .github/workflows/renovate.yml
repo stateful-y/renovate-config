@@ -2,9 +2,16 @@ name: Renovate
 
 on:
   schedule:
-    # Mondays 08:00 UTC. The preset's own `schedule` still gates when PRs may open,
-    # so a repo is only acted on inside its allowed window even if the runner fires.
-    - cron: "0 8 * * 1"
+    # Daily 05:00 UTC. The preset's own `schedule` still gates when PRs may open, so a
+    # repo is only acted on inside its allowed window even if the runner fires.
+    #
+    # This was Mondays only, which combined with the preset's `prHourlyLimit: 2` to cap
+    # the whole fleet at two dependency PRs per repo per week. Everything past the second
+    # went to the dashboard's Rate-Limited section and stayed there, so the dashboards
+    # grew without bound: 61 queued updates across eight repos by the time it was looked
+    # at. A weekly runner also means a stale branch waits a week for its rebase, which
+    # matters because the org ruleset requires branches be up to date before merging.
+    - cron: "0 5 * * *"
   workflow_dispatch:
     inputs:
       logLevel:

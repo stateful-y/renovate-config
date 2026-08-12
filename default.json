@@ -4,16 +4,16 @@
     "config:recommended",
     "helpers:pinGitHubActionDigests"
   ],
+  "description": "There is deliberately no `schedule` here. Cadence is the runner cron's job (daily, 05:00 UTC) and having a second, independent gate is what broke this setup once already: #1 found that `before 9am on monday` against a `0 8 * * 1` cron left one hour of margin, and the one run that had happened started 3h29m late, so the window was missed and not a single PR was ever opened. GitHub Actions cron is best-effort, so any window narrow enough to be useful is also narrow enough to miss. With no `schedule`, whenever the runner actually manages to fire, Renovate is free to act, and a manual workflow_dispatch works at any hour instead of silently doing nothing.",
   "timezone": "Etc/UTC",
-  "schedule": [
-    "on monday"
-  ],
   "labels": [
     "dependencies"
   ],
   "dependencyDashboard": true,
-  "prConcurrentLimit": 5,
-  "prHourlyLimit": 2,
+  "prConcurrentLimit": 10,
+  "prHourlyLimit": 0,
+  "platformAutomerge": true,
+  "rebaseWhen": "behind-base-branch",
   "packageRules": [
     {
       "description": "Batch runtime, test and docs dependencies into one low-noise PR.",
@@ -59,6 +59,61 @@
       "pinDigests": false,
       "addLabels": [
         "ci"
+      ]
+    },
+    {
+      "description": "Automerge action digest refreshes and action patch/minor bumps. The `automerge` label is not decoration: renovate-automerge.yml in each repo approves a bot PR only when it carries this label, because that workflow cannot key on the bot's account name (this App is `stateful-y-renovate[bot]`, not the hosted `renovate[bot]`). So the label must sit on exactly the rules that also set `automerge: true`, and nowhere else. Majors are excluded because an action major can change its inputs or outputs.",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchUpdateTypes": [
+        "digest",
+        "pin",
+        "pinDigest",
+        "patch",
+        "minor"
+      ],
+      "automerge": true,
+      "addLabels": [
+        "automerge"
+      ]
+    },
+    {
+      "description": "Same for the `# renovate:` annotated tool pins (uv, nox, git-cliff, gitleaks, cyclonedx-bom, twine), but ONLY in rendered workflows. Scoped positively to `.github/workflows/**` rather than by excluding `template/**`, because a later rule cannot take back an `addLabels` an earlier one applied: it would leave a PR labelled for automerge that Renovate will not merge, which the approve workflow would then approve and leave sitting. A bump inside template/ is seeded into all seven generated repos on their next update, so it keeps human review.",
+      "matchManagers": [
+        "custom.regex"
+      ],
+      "matchFileNames": [
+        ".github/workflows/**"
+      ],
+      "matchUpdateTypes": [
+        "digest",
+        "pin",
+        "pinDigest",
+        "patch",
+        "minor"
+      ],
+      "automerge": true,
+      "addLabels": [
+        "automerge"
+      ]
+    },
+    {
+      "description": "Automerge patch/minor for the lint tools. These are dev-only, and a lint upgrade that breaks the build breaks it in CI, which blocks the merge by construction. Kept as its own rule rather than folded into the ones above so the lockstep grouping set earlier still applies. The grouped `python-dependencies` PR is deliberately NOT automerged: it batches runtime and dev dependencies into a single PR, so there is no safe half of it to merge unattended.",
+      "matchPackageNames": [
+        "ruff",
+        "rumdl",
+        "ty",
+        "interrogate",
+        "prek"
+      ],
+      "matchUpdateTypes": [
+        "patch",
+        "minor"
+      ],
+      "automerge": true,
+      "addLabels": [
+        "automerge"
       ]
     }
   ],
