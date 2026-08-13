@@ -56,6 +56,7 @@
       "matchFileNames": [
         "template/**"
       ],
+      "additionalBranchPrefix": "template-",
       "pinDigests": false,
       "addLabels": [
         "ci"
@@ -79,7 +80,7 @@
       ]
     },
     {
-      "description": "Same for the `# renovate:` annotated tool pins (uv, nox, git-cliff, gitleaks, cyclonedx-bom, twine), but ONLY in rendered workflows. Scoped positively to `.github/workflows/**` rather than by excluding `template/**`, because a later rule cannot take back an `addLabels` an earlier one applied: it would leave a PR labelled for automerge that Renovate will not merge, which the approve workflow would then approve and leave sitting. A bump inside template/ is seeded into all seven generated repos on their next update, so it keeps human review.",
+      "description": "Same for the `# renovate:` annotated tool pins (uv, nox, git-cliff, gitleaks, cyclonedx-bom, twine), but ONLY in rendered workflows. Scoped positively to `.github/workflows/**` rather than by excluding `template/**`, because a later rule cannot take back an `addLabels` an earlier one applied: it would leave a PR labelled for automerge that Renovate will not merge, which the approve workflow would then approve and leave sitting. A bump inside template/ is seeded into all seven generated repos on their next update, so it keeps human review. NOTE this file scoping only holds because the template rule above sets `additionalBranchPrefix`, which splits template/** bumps into their own branch and therefore their own PR. Without that split, a dependency pinned in BOTH a rendered workflow and a template source lands in one PR whose file list matches this rule, and the whole PR gets labelled -- which is exactly what happened to the nox bump in python-package-copier#318 on the first live run.",
       "matchManagers": [
         "custom.regex"
       ],
