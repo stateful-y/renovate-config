@@ -53,3 +53,11 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
         env:
           LOG_LEVEL: ${{ inputs.logLevel || 'info' }}
+          # Headroom, not a fix. Node's default heap on this runner is 4GB, and one
+          # oversized changelog fetch reached it and aborted the process (exit 134),
+          # ending the fleet pass at repository 3 of 13 with no way to resume. The
+          # preset turns that specific fetch off; this makes the next unforeseen one
+          # less likely to be fatal. The runner has 16GB, so 8GB for the heap is safe.
+          # `NODE_OPTIONS` is in the action's default `env-regex`, so it reaches the
+          # container without widening that allowlist.
+          NODE_OPTIONS: --max-old-space-size=8192
