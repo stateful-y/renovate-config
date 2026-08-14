@@ -116,6 +116,13 @@
       "addLabels": [
         "automerge"
       ]
+    },
+    {
+      "description": "Do not fetch release notes for taiki-e/install-action. It publishes ~1200 releases whose bodies each enumerate every tool version they bump, an order of magnitude more history than anything else the fleet depends on. The template's `changelog.yml.jinja` carries the bare major `@v2`, which the template regex manager below reads as version 2.0.0, so the first bump off it spans the entire v2 line: rendering that PR body fetched the whole range and pushed Renovate's Node heap past 4GB. The process aborted (exit 134) at repository 3 of 13, so ten repos got no pass at all -- one dependency's changelog took down the whole fleet run. `prConcurrentLimit` had been hiding it, since the queue never reached this dependency until enough PRs ahead of it had automerged. The compare link in the PR body still shows what changed.",
+      "matchDepNames": [
+        "taiki-e/install-action"
+      ],
+      "fetchChangeLogs": "off"
     }
   ],
   "customManagers": [
