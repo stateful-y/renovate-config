@@ -80,12 +80,15 @@
       ]
     },
     {
-      "description": "Same for the `# renovate:` annotated tool pins (uv, nox, git-cliff, gitleaks, cyclonedx-bom, twine), but ONLY in rendered workflows. Scoped positively to `.github/workflows/**` rather than by excluding `template/**`, because a later rule cannot take back an `addLabels` an earlier one applied: it would leave a PR labelled for automerge that Renovate will not merge, which the approve workflow would then approve and leave sitting. A bump inside template/ is seeded into all seven generated repos on their next update, so it keeps human review. NOTE this file scoping only holds because the template rule above sets `additionalBranchPrefix`, which splits template/** bumps into their own branch and therefore their own PR. Without that split, a dependency pinned in BOTH a rendered workflow and a template source lands in one PR whose file list matches this rule, and the whole PR gets labelled -- which is exactly what happened to the nox bump in python-package-copier#318 on the first live run.",
+      "description": "Same for the `# renovate:` annotated tool pins (uv, nox, git-cliff, gitleaks, cyclonedx-bom, twine), but ONLY in rendered workflows. Scoped positively to `.github/workflows/**` rather than by excluding `template/**`, because a later rule cannot take back an `addLabels` an earlier one applied: it would leave a PR labelled for automerge that Renovate will not merge, which the approve workflow would then approve and leave sitting. A bump inside template/ is seeded into all seven generated repos on their next update, so it keeps human review. NOTE this file scoping only holds because the template rule above sets `additionalBranchPrefix`, which splits template/** bumps into their own branch and therefore their own PR. Without that split, a dependency pinned in BOTH a rendered workflow and a template source lands in one PR whose file list matches this rule, and the whole PR gets labelled -- which is exactly what happened to the nox bump in python-package-copier#318 on the first live run. `astral-sh/uv` is excluded because the rule below deliberately un-splits it, which puts it back in exactly the both-trees-in-one-PR shape this scoping cannot label safely. The exclusion has to sit here rather than in a later rule, for the same reason the file scoping does: `addLabels` is additive and cannot be revoked.",
       "matchManagers": [
         "custom.regex"
       ],
       "matchFileNames": [
         ".github/workflows/**"
+      ],
+      "matchDepNames": [
+        "!astral-sh/uv"
       ],
       "matchUpdateTypes": [
         "digest",
@@ -123,6 +126,13 @@
         "taiki-e/install-action"
       ],
       "fetchChangeLogs": "off"
+    },
+    {
+      "description": "Keep uv's two halves in one PR. python-package-copier pins uv in its own workflows AND in the template sources it ships, and `test_repo_uv_pin_is_uniform_and_matches_the_version_shipped_to_projects` asserts the two are equal, so a split bump is red on both sides: the rendered half reads as the repo testing the template against a toolchain no generated project uses, and the template half reads as the mirror image. #329 and #330 deadlocked exactly that way, each blocking the other, while the same bump had merged as a single green PR the day before the split landed. Resetting `additionalBranchPrefix` to empty puts both trees back on one branch. This is the only dependency that needs it: a split is only fatal where a test ties the two pins together, and uv is the only pin under one.",
+      "matchDepNames": [
+        "astral-sh/uv"
+      ],
+      "additionalBranchPrefix": ""
     }
   ],
   "customManagers": [
