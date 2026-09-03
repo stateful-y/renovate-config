@@ -32,6 +32,16 @@
       ]
     },
     {
+      "description": "Never let Renovate rewrite `requires-python`. The pep621 manager reads the interpreter floor as an ordinary dependency (depName `python`, depType `requires-python`) and 'updates' it to the newest CPython, which is not a bump but a support drop: yohou-nixtla#76 turned `>=3.11,<3.14` into `>=3.14,<3.15` and relocked uv.lock to `==3.14.*`, so every job in a matrix that still tests 3.11 through 3.13 died at `uv sync` with `The requested interpreter resolved to Python 3.12.3, which is incompatible with the project's Python requirement`. The PR sat red for three weeks. Only repos carrying an upper bound are exposed, because an open-ended `>=3.11` is never out of date, which is why one repo broke and eight did not, and why kedro-dagster's `<3.15` is the next one due. Which interpreters a package supports is a decision about the CI matrix, the lockfile and the classifiers all at once, so it belongs to a human and never to an unattended bump. Scoped by depType rather than depName so a real distribution that happens to be called `python` would still be managed.",
+      "matchManagers": [
+        "pep621"
+      ],
+      "matchDepTypes": [
+        "requires-python"
+      ],
+      "enabled": false
+    },
+    {
       "description": "Lockstep the version-sensitive lint tools so local == CI stays true after an upgrade. prek pins the builtin hooks' implementations, so it moves with the linters.",
       "matchPackageNames": [
         "ruff",
