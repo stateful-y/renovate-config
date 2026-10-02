@@ -6,7 +6,8 @@
   ],
   "description": [
     "There is deliberately no `schedule` here. Cadence is the runner cron's job (daily, 05:00 UTC) and having a second, independent gate is what broke this setup once already: #1 found that `before 9am on monday` against a `0 8 * * 1` cron left one hour of margin, and the one run that had happened started 3h29m late, so the window was missed and not a single PR was ever opened. GitHub Actions cron is best-effort, so any window narrow enough to be useful is also narrow enough to miss. With no `schedule`, whenever the runner actually manages to fire, Renovate is free to act, and a manual workflow_dispatch works at any hour instead of silently doing nothing.",
-    "Do not treat the drain workflow's branch updates as somebody having edited the branch. `drain-automerge-queue.yml` exists because the ruleset requires branches be up to date and `rebaseWhen: behind-base-branch` only rebases when Renovate next runs, so it advances the oldest automerge PR itself via `PUT /pulls/{n}/update-branch`. GitHub attributes the resulting merge commit to the App that made the call, `stateful-y-automation[bot]`, and Renovate reads an unrecognised last-commit author as a human edit: it posts an Edited/Blocked notice and stops managing the branch entirely. It then cannot rebase it, cannot regenerate it when the file set changes, and cannot supersede it with a newer version, so the branch is left depending on the drain workflow forever. This is how python-package-copier#329 got stuck as a half-bump that no config change could repair: the two automations were fighting and the drain workflow won by disabling the other. Every generated repo runs the same drain workflow under the same org App, so one address covers the fleet."
+    "Do not treat the drain workflow's branch updates as somebody having edited the branch. `drain-automerge-queue.yml` exists because the ruleset requires branches be up to date and `rebaseWhen: behind-base-branch` only rebases when Renovate next runs, so it advances the oldest automerge PR itself via `PUT /pulls/{n}/update-branch`. GitHub attributes the resulting merge commit to the App that made the call, `stateful-y-automation[bot]`, and Renovate reads an unrecognised last-commit author as a human edit: it posts an Edited/Blocked notice and stops managing the branch entirely. It then cannot rebase it, cannot regenerate it when the file set changes, and cannot supersede it with a newer version, so the branch is left depending on the drain workflow forever. This is how python-package-copier#329 got stuck as a half-bump that no config change could repair: the two automations were fighting and the drain workflow won by disabling the other. Every generated repo runs the same drain workflow under the same org App, so one address covers the fleet.",
+    "Refresh every lockfile weekly with `lockFileMaintenance`. Renovate's per-dependency updates only move what a manifest names, so a transitive package that lives only in uv.lock or package-lock.json never moves at all: urllib3, pyjwt, gitpython, click and friends sat on vulnerable versions across nine repos until Dependabot alerts were fixed by hand, and kedro-dagster-example's lock had not moved since it was created. OSV alerts cannot cover that gap either, because Renovate does not remediate transitive vulnerabilities in uv lockfiles; only re-resolving the whole lock does. The schedule is overridden on purpose: the preset default is `before 4am on monday`, which a runner firing at 05:00 UTC can never hit (the same narrow-window failure #1 recorded), so the window is the whole of Monday instead. Not automerged, for the same reason the grouped `python-dependencies` PR is not: a full re-resolve can move runtime dependencies across minor versions."
   ],
   "timezone": "Etc/UTC",
   "labels": [
@@ -20,6 +21,13 @@
   "gitIgnoredAuthors": [
     "309310324+stateful-y-automation[bot]@users.noreply.github.com"
   ],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": [
+      "* * * * 1"
+    ]
+  },
+  "osvVulnerabilityAlerts": true,
   "packageRules": [
     {
       "description": "Batch runtime, test and docs dependencies into one low-noise PR.",
