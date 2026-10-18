@@ -87,6 +87,24 @@
       ]
     },
     {
+      "description": "Batch the template's non-major action and tool bumps into one PR. They are never automerged (a template bump is seeded into every generated repo, so it keeps human review), which means each one waits for a person, and one PR per action ref left python-package-copier with eight of them open at once, every one red for the same unrelated reason. Grouped, they get reviewed and merged together. Majors stay separate because an action major can change its inputs or outputs and deserves its own look. `astral-sh/uv` is excluded because the rule further down puts both of its trees on one branch on purpose, and pulling its template half into this group would split it again.",
+      "matchManagers": [
+        "custom.regex"
+      ],
+      "matchFileNames": [
+        "template/**"
+      ],
+      "matchDepNames": [
+        "!astral-sh/uv"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "digest"
+      ],
+      "groupName": "template actions"
+    },
+    {
       "description": "Automerge action digest refreshes and action patch/minor bumps. The `automerge` label is not decoration: renovate-automerge.yml in each repo approves a bot PR only when it carries this label, because that workflow cannot key on the bot's account name (this App is `stateful-y-renovate[bot]`, not the hosted `renovate[bot]`). So the label must sit on exactly the rules that also set `automerge: true`, and nowhere else. Majors are excluded because an action major can change its inputs or outputs.",
       "matchManagers": [
         "github-actions"
