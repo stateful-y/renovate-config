@@ -98,7 +98,7 @@
       ]
     },
     {
-      "description": "Batch the template's non-major action and tool bumps into one PR. They are never automerged (a template bump is seeded into every generated repo, so it keeps human review), which means each one waits for a person, and one PR per action ref left python-package-copier with eight of them open at once, every one red for the same unrelated reason. Grouped, they get reviewed and merged together. Majors stay separate because an action major can change its inputs or outputs and deserves its own look. `astral-sh/uv` is excluded because the rule further down puts both of its trees on one branch on purpose, and pulling its template half into this group would split it again.",
+      "description": "Batch the template's non-major action and tool bumps into one PR, and automerge it. A template bump is seeded into every generated repo on its next update, but these are non-major bumps, which keep an action's inputs and outputs, and the template's own CI still has to pass before the merge. A bad one reaches the fleet only through a template release and fan-out, both of which a person drives. Leaving them for a person only meant they sat: one PR per action ref once left eight of them open at once, every one red for the same unrelated reason. The label is safe on a group rule because the group branch holds only updates this rule matched, so no non-automerged bump can share the PR. Majors stay separate because an action major can change its inputs or outputs and deserves its own look. `astral-sh/uv` is excluded because the rule further down puts both of its trees on one branch on purpose, and pulling its template half into this group would split it again.",
       "matchManagers": [
         "custom.regex"
       ],
@@ -113,7 +113,11 @@
         "patch",
         "digest"
       ],
-      "groupName": "template actions"
+      "groupName": "template actions",
+      "automerge": true,
+      "addLabels": [
+        "automerge"
+      ]
     },
     {
       "description": "Automerge action digest refreshes and action patch/minor bumps. The `automerge` label is not decoration: renovate-automerge.yml in each repo approves a bot PR only when it carries this label, because that workflow cannot key on the bot's account name (this App is `stateful-y-renovate[bot]`, not the hosted `renovate[bot]`). So the label must sit on exactly the rules that also set `automerge: true`, and nowhere else. Majors are excluded because an action major can change its inputs or outputs.",
@@ -133,7 +137,7 @@
       ]
     },
     {
-      "description": "Same for the `# renovate:` annotated tool pins (uv, nox, git-cliff, gitleaks, cyclonedx-bom, twine), but ONLY in rendered workflows. Scoped positively to `.github/workflows/**` rather than by excluding `template/**`, because a later rule cannot take back an `addLabels` an earlier one applied: it would leave a PR labelled for automerge that Renovate will not merge, which the approve workflow would then approve and leave sitting. A bump inside template/ is seeded into all seven generated repos on their next update, so it keeps human review. NOTE this file scoping only holds because the template rule above sets `additionalBranchPrefix`, which splits template/** bumps into their own branch and therefore their own PR. Without that split, a dependency pinned in BOTH a rendered workflow and a template source lands in one PR whose file list matches this rule, and the whole PR gets labelled -- which is exactly what happened to the nox bump in python-package-copier#318 on the first live run. `astral-sh/uv` is excluded because the rule below deliberately un-splits it, which puts it back in exactly the both-trees-in-one-PR shape this scoping cannot label safely. The exclusion has to sit here rather than in a later rule, for the same reason the file scoping does: `addLabels` is additive and cannot be revoked.",
+      "description": "Same for the `# renovate:` annotated tool pins (uv, nox, git-cliff, gitleaks, cyclonedx-bom, twine), but ONLY in rendered workflows. Scoped positively to `.github/workflows/**` rather than by excluding `template/**`, because a later rule cannot take back an `addLabels` an earlier one applied: it would leave a PR labelled for automerge that Renovate will not merge, which the approve workflow would then approve and leave sitting. Template bumps are labelled by the `template actions` group rule instead, which only ever sees its own branch. NOTE this file scoping only holds because the template rule above sets `additionalBranchPrefix`, which splits template/** bumps into their own branch and therefore their own PR. Without that split, a dependency pinned in BOTH a rendered workflow and a template source lands in one PR whose file list matches this rule, and the whole PR gets labelled -- which is exactly what happened to the nox bump in python-package-copier#318 on the first live run. `astral-sh/uv` is excluded because the rule below deliberately un-splits it, which puts it back in exactly the both-trees-in-one-PR shape this scoping cannot label safely. The exclusion has to sit here rather than in a later rule, for the same reason the file scoping does: `addLabels` is additive and cannot be revoked.",
       "matchManagers": [
         "custom.regex"
       ],
