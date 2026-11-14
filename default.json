@@ -65,11 +65,23 @@
       "matchPackageNames": [
         "ruff",
         "rumdl",
-        "ty",
         "interrogate",
         "prek"
       ],
       "groupName": "lint-tools",
+      "addLabels": [
+        "python"
+      ]
+    },
+    {
+      "description": "ty on its own, once a month, and never automerged. ty is pre-1.0 and ships breaking rule renames and splits in most releases (0.0.92 added `invalid-attribute-override`, 0.0.100 split `unresolved-attribute`, 0.0.102 split `invalid-return-type`), and each one renames rules inside `# ty: ignore[...]` comments and `[tool.ty.rules]`. A bump therefore almost always needs a hand fix in every repo: automerge never fired for it, it only left a red PR in each repo, and grouping it with the other lint tools held ruff, rumdl and prek back behind that red PR. Kept out of `lint-tools` so those still automerge; batched monthly so the hand fix happens once per month rather than once per release. `ty check --fix` applies the renames.",
+      "matchPackageNames": [
+        "ty"
+      ],
+      "groupName": "ty",
+      "schedule": [
+        "* 0-5 1 * *"
+      ],
       "addLabels": [
         "python"
       ]
@@ -164,7 +176,6 @@
       "matchPackageNames": [
         "ruff",
         "rumdl",
-        "ty",
         "interrogate",
         "prek"
       ],
