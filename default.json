@@ -189,6 +189,23 @@
       ]
     },
     {
+      "description": "Automerge major bumps of tools that only run inside CI workflows: cyclonedx-bom, which writes the release SBOM, and the postgres image used as a CI service container. Neither ships in a package or changes what users install, and a major that breaks either one fails the CI that has to pass before the merge. Every one of their majors so far (cyclonedx-bom 8 and 9 across nine repos, postgres 19) needed no code change and sat waiting for a human approval that added nothing. Scoped to `.github/workflows/**` so a bump of the cyclonedx-bom seed in python-package-copier's `template/` stays manual: nothing in the template's CI runs that seed, so CI cannot vouch for it. The label sits on the same rule as `automerge: true`, as renovate-automerge.yml requires.",
+      "matchDepNames": [
+        "cyclonedx-bom",
+        "postgres"
+      ],
+      "matchFileNames": [
+        ".github/workflows/**"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "automerge": true,
+      "addLabels": [
+        "automerge"
+      ]
+    },
+    {
       "description": "Do not fetch release notes for taiki-e/install-action. It publishes ~1200 releases whose bodies each enumerate every tool version they bump, an order of magnitude more history than anything else the fleet depends on. The template's `changelog.yml.jinja` carries the bare major `@v2`, which the template regex manager below reads as version 2.0.0, so the first bump off it spans the entire v2 line: rendering that PR body fetched the whole range and pushed Renovate's Node heap past 4GB. The process aborted (exit 134) at repository 3 of 13, so ten repos got no pass at all -- one dependency's changelog took down the whole fleet run. `prConcurrentLimit` had been hiding it, since the queue never reached this dependency until enough PRs ahead of it had automerged. The compare link in the PR body still shows what changed.",
       "matchDepNames": [
         "taiki-e/install-action"
